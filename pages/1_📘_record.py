@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import pandas as pd
 from functions.get_google_sheets_data import get_google_sheet, export_to_google_sheets
 
 # from functions.app import add_dfForm, check_password
