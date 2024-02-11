@@ -1,6 +1,8 @@
+import duckdb
 import streamlit as st
 import pandas as pd
-import duckdb as duckdb
+
+# import python-duckdb as duckdb
 from functions.app import reduce_dataframe_size, clean_lifts_data
 
 # Import relevant functions from get_google_sheets_data.py
@@ -130,6 +132,3 @@ def get_system_prompt():
         df=cleaned_lifts_df,
     )
     return GEN_SQL.format(context=table_context)
-
-
-get_system_prompt()
