@@ -19,6 +19,7 @@
 - Use Google Sheets as a flexible data store to write gym session data via the gspread module.
 - Develop Streamlit web app (streamlit_app_gym.py) for user interface to input data to google cloud and to visualize lift trends.
 - All users can monitor existing users' performance; however, a password is required to create new users and to input data.
+- Integrate with OpenAI GPT-3.5 to query fitness data in natural language providing addition insight. 
 
 ## Secondary
 
@@ -48,7 +49,7 @@ The Fitness Project includes an AI Fitness Advisor chat bot powered by OpenAI's 
 ### System Requirements
 
 - [OpenAI GPT-3.5](https://beta.openai.com/signup/): To access the powerful language model for the chat bot.
-- Python packages listed in [Requirements](#requirements): Ensure you have the necessary dependencies installed.
+- Python packages listed in [environment.yml](#environment.yml): Ensure you have the necessary dependencies installed.
 
 ### Getting Started
 
