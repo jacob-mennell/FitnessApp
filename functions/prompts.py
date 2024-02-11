@@ -1,8 +1,6 @@
-import duckdb
+from duckdb import connect
 import streamlit as st
 import pandas as pd
-
-# import python-duckdb as duckdb
 from functions.app import reduce_dataframe_size, clean_lifts_data
 
 # Import relevant functions from get_google_sheets_data.py
@@ -86,7 +84,7 @@ def get_table_context(
     table = table_name.split(".")
 
     # Create an in-memory temp DuckDB database
-    con = duckdb.connect()
+    con = duckdb.connect(":memory:")
 
     # Register the DataFrame as a temporary DuckDB table if provided
     if df is not None:
