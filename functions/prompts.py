@@ -1,4 +1,4 @@
-from duckdb import connect
+import duckdb as duckdb
 import streamlit as st
 import pandas as pd
 from functions.app import reduce_dataframe_size, clean_lifts_data
@@ -28,7 +28,7 @@ lifts_df = get_google_sheet(
 cleaned_lifts_df = clean_lifts_data(lifts_df)
 
 # Your specific table details
-TABLE_NAME = "fit.historic_exercises"
+TABLE_NAME = repr("fit.historic_exercises")
 TABLE_DESCRIPTION = """
 This table contains records of gym sessions. It includes the date, activity e.g. bench press, 
 and the weight lifted, and number of sets and reps achieved. It is intended to track gym performance
@@ -84,19 +84,35 @@ def get_table_context(
     table = table_name.split(".")
 
     # Create an in-memory temp DuckDB database
-    con = duckdb.connect(":memory:")
+    # con = duckdb.connect(":memory:")
+    con = duckdb.connect()
 
     # Register the DataFrame as a temporary DuckDB table if provided
     if df is not None:
         con.register(f"{table}", df)
 
     # Retrieve column information from DuckDB
-    columns = con.execute(f"SELECT COLUMN_NAME, DATA_TYPE FROM {table}").fetchdf()
+    # columns = con.execute(
+    #     f"SELECT column_name, type_name FROM duckdb_catalog.columns WHERE table_name = '{table}'"
+    # ).fetchdf()
+
+    temp_name = '["fit", "historic_exercises"]'
+    columns = con.execute(
+        f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '{temp_name}'"
+    ).fetchdf()
+
+    print(con.execute(f"SELECT table_name FROM information_schema.columns").fetchdf())
+
+    # columns = con.execute(
+    #     f"SELECT table_name FROM information_schema.columns WHERE table_name = "
+    # ).fetchdf()
+
+    print(columns)
 
     columns = "\n".join(
         [
-            f"- **{columns['COLUMN_NAME'][i]}**: {columns['DATA_TYPE'][i]}"
-            for i in range(len(columns["COLUMN_NAME"]))
+            f"- **{columns['column_name'][i]}**: {columns['data_type'][i]}"
+            for i in range(len(columns["column_name"]))
         ]
     )
 

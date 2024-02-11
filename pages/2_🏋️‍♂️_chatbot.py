@@ -2,6 +2,7 @@ from openai import OpenAI
 import streamlit as st
 from functions.prompts import get_system_prompt
 from functions.app import reduce_dataframe_size, clean_lifts_data
+import duckdb as duckdb
 from openai import OpenAI
 import re
 import streamlit as st
@@ -25,7 +26,7 @@ st.markdown("- Where am I progressing the best?")
 st.markdown("- What exercises do I need to improve?")
 st.markdown("- Can you suggest a workout routine based on my recent lifts?")
 
-
+print(get_system_prompt())
 # Initialize the chat messages history
 if "messages" not in st.session_state.keys():
     st.session_state.messages = [{"role": "assistant", "content": get_system_prompt()}]
@@ -66,6 +67,7 @@ if st.session_state.messages[-1]["role"] != "assistant":
     if sql_match:
         # Extract the SQL query from the matched content
         sql = sql_match.group(1)
+        print(sql)
 
         # Connect to DuckDB
         con = duckdb.connect()
