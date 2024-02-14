@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from functions.get_google_sheets_data import get_google_sheet, export_to_google_sheets
+from modules.get_google_sheets_data import get_google_sheet, export_to_google_sheets
 import hashlib
 
 
