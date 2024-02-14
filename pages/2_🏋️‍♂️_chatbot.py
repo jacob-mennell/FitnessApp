@@ -1,7 +1,7 @@
 from openai import OpenAI
 import streamlit as st
-from functions.prompts import get_system_prompt
-from functions.util import reduce_dataframe_size, clean_lifts_data, check_password
+from modules.prompts import get_system_prompt
+from modules.util import reduce_dataframe_size, clean_lifts_data, check_password
 import duckdb as duckdb
 from openai import OpenAI
 import re
