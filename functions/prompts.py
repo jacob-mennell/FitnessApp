@@ -1,7 +1,7 @@
 import duckdb as duckdb
 import streamlit as st
 import pandas as pd
-from functions.app import reduce_dataframe_size, clean_lifts_data
+from functions.util import reduce_dataframe_size, clean_lifts_data
 
 # Import relevant functions from get_google_sheets_data.py
 from functions.get_google_sheets_data import (
