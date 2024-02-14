@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
-from functions.get_google_sheets_data import get_google_sheet, export_to_google_sheets
-from functions.util import (
+from modules.get_google_sheets_data import get_google_sheet, export_to_google_sheets
+from modules.util import (
     clean_lifts_data,
     reduce_dataframe_size,
     add_dfForm,
