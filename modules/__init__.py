@@ -1,4 +1,4 @@
-# functions/__init__.py
+# modules/__init__.py
 from .get_google_sheets_data import get_google_sheet, export_to_google_sheets
 from .prompts import get_system_prompt
 from .util import (
