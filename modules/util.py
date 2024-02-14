@@ -47,33 +47,6 @@ def add_dfForm():
     )
     st.session_state.data = pd.concat([st.session_state.data, row])
 
-
-# def check_password():
-#     """Returns `True` if the user had the correct password."""
-
-#     def password_entered():
-#         """Checks whether a password entered by the user is correct."""
-#         if st.session_state.get("password") == st.secrets["PASSWORD"]:
-#             st.session_state["password_correct"] = True
-#             del st.session_state["password"]  # don't store password
-#         else:
-#             st.session_state["password_correct"] = False
-#             st.error("😕 Password incorrect")
-
-#     if "password_correct" not in st.session_state:
-#         st.session_state["password_correct"] = False
-
-#     # First run, show input for password.
-#     st.text_input(
-#         "Need Password to input data",
-#         type="password",
-#         on_change=password_entered,
-#         key="password",
-#     )
-
-# return st.session_state["password_correct"]
-
-
 def hash_password(password):
     """# Replace 'your_password' with your actual password
     ``` hashed_password = hash_password('your_password')
