@@ -29,18 +29,19 @@ st.markdown("- Can you suggest a workout routine based on my recent lifts?")
 if check_password():
     # Initialize the chat messages history
     if "messages" not in st.session_state.keys():
-        st.session_state.messages = [{"role": "assistant", "content": get_system_prompt()}]
-    
+        st.session_state.messages = [
+            {"role": "assistant", "content": get_system_prompt()}
+        ]
+
     # Prompt for user input and save
     if prompts := st.chat_input():
         st.session_state.messages.append({"role": "user", "content": prompts})
-    
-    
+
     # display the existing chat messages
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.write(message["content"])
-    
+
     # If last message is not from assistant, we need to generate a new response
     if st.session_state.messages[-1]["role"] != "assistant":
         # Call LLM
@@ -55,26 +56,26 @@ if check_password():
                 )
                 response = r.choices[0].message.content
                 st.write(response)
-    
+
         message = {"role": "assistant", "content": response}
-    
+
         # Parse the response for a SQL query and execute if available
-    
+
         # Use regular expression to search for a SQL query pattern in the 'response' string
         sql_match = re.search(r"```sql\n(.*)\n```", response, re.DOTALL)
-    
+
         # Check if a SQL query is found in the response
         if sql_match:
             # Extract the SQL query from the matched content
             sql = sql_match.group(1)
-            print(sql)
-    
+            st.write(sql)
+
             # Connect to DuckDB
-            con = duckdb.connect()
-    
+            con = duckdb.connect("test.db")
+
             # Execute the SQL query using DuckDB connection and store the results
             message["results"] = con.execute(sql).fetchdf()
-    
+
             # Display the results in a DataFrame using Streamlit
             st.dataframe(message["results"])
 
