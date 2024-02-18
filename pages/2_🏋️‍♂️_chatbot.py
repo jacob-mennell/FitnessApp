@@ -1,11 +1,19 @@
 from openai import OpenAI
 import streamlit as st
-from modules.prompts import get_system_prompt
-from modules.util import reduce_dataframe_size, clean_lifts_data, check_password
+from modules.prompts_sql import get_system_prompt
+from modules.util import (
+    reduce_dataframe_size,
+    clean_lifts_data,
+    check_password,
+    execute_sql_query,
+)
 import duckdb as duckdb
-from openai import OpenAI
 import re
-import streamlit as st
+import os
+
+DB_DIR = "database"
+DB_NAME = "fit.db"
+
 
 st.title("AI Fitness Advisor 🏋️‍♂️")
 
@@ -59,25 +67,26 @@ if check_password():
 
         message = {"role": "assistant", "content": response}
 
-        # Parse the response for a SQL query and execute if available
-
         # Use regular expression to search for a SQL query pattern in the 'response' string
         sql_match = re.search(r"```sql\n(.*)\n```", response, re.DOTALL)
 
+        # Use regular expression to search for a SQL query pattern in the 'response' string
+        python_match = re.search(r"```python\n(.*)\n```", response, re.DOTALL)
+
         # Check if a SQL query is found in the response
         if sql_match:
-            # Extract the SQL query from the matched content
+            # Extract the SQL
             sql = sql_match.group(1)
             st.write(sql)
 
-            # Connect to DuckDB
-            con = duckdb.connect("test.db")
-
             # Execute the SQL query using DuckDB connection and store the results
-            message["results"] = con.execute(sql).fetchdf()
+            message["results"] = execute_sql_query(
+                sql=sql, db_name=DB_NAME, db_dir=DB_DIR
+            )
 
-            # Display the results in a DataFrame using Streamlit
-            st.dataframe(message["results"])
+            # Display the results
+            if message["results"] is not None:
+                st.dataframe(message["results"])
 
     # Append the assistant's message (including SQL results) to the chat messages
     st.session_state.messages.append(message)

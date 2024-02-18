@@ -1,6 +1,7 @@
 # modules/__init__.py
 from .get_google_sheets_data import get_google_sheet, export_to_google_sheets
-from .prompts import get_system_prompt
+from .prompts_sql import get_system_prompt
+from .prompts_viz import get_plotly_prompt
 from .util import (
     clean_lifts_data,
     reduce_dataframe_size,

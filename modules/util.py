@@ -3,11 +3,15 @@ import pandas as pd
 import plotly.express as px
 from modules.get_google_sheets_data import get_google_sheet, export_to_google_sheets
 import hashlib
+from typing import Optional, Union
+import os
+import duckdb as duckdb
 
 
 def clean_lifts_data(lifts_df):
     # Data cleaning operations
     lifts_df["Weight"] = lifts_df["Weight"].astype(float)
+    lifts_df["Exercise"] = lifts_df["Exercise"].astype(str)
     lifts_df["Reps"] = lifts_df["Reps"].astype(str)
     lifts_df["Sets"] = lifts_df["Sets"].astype(int)
     lifts_df["Notes"] = lifts_df["Notes"].astype(str)
@@ -46,6 +50,7 @@ def add_dfForm():
         }
     )
     st.session_state.data = pd.concat([st.session_state.data, row])
+
 
 def hash_password(password):
     """# Replace 'your_password' with your actual password
@@ -274,3 +279,22 @@ def user_pb_comparison(lifts_df, exercise_list_master):
     )
     fig.update_yaxes(dtick=20)
     st.plotly_chart(fig, use_container_width=True)
+
+
+def execute_sql_query(sql: str, db_dir: str, db_name: str) -> Optional[pd.DataFrame]:
+    """
+    Execute a SQL query and return the results as a pandas DataFrame.
+
+    Parameters:
+    sql (str): The SQL query to execute.
+
+    Returns:
+    pd.DataFrame: The result of the query as a DataFrame, or None if an error occurred.
+    """
+    db_path = os.path.join(db_dir, db_name)
+    con = duckdb.connect(db_path)
+    try:
+        return con.execute(sql).fetchdf()
+    except Exception as e:
+        st.error(f"Failed to execute SQL query: {e}")
+        return None
