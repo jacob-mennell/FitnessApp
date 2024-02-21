@@ -24,7 +24,7 @@ lifts_df = get_google_sheet(
 )
 
 # Apply cleaning functions to lifts_df
-cleaned_lifts_df = clean_lifts_data(lifts_df)
+historic_exercises_df = clean_lifts_data(lifts_df)
 
 # Your specific table details
 TABLE_NAME = "historic_exercises"
@@ -101,6 +101,6 @@ def get_plotly_prompt():
     table_context = get_table_context(
         table_name=TABLE_NAME,
         table_description=TABLE_DESCRIPTION,
-        df=cleaned_lifts_df,
+        df=historic_exercises_df,
     )
     return GEN_PLOTLY.format(context=table_context)
