@@ -29,7 +29,6 @@ This project is a fitness tracker that allows users to record and visualize lift
 - Currently, Fitbit data is read from a _.pkl_ file due to issues accessing the data directly in the Streamlit environment.
 - Develop Streamlit web app for user interface to collate fitness and lifestyle data.
 
-
 ## Application 
 **Link to Gym Performance Tracker Streamlit App:**
 [https://gym-tracker.streamlit.app/](https://gym-tracker.streamlit.app/)
@@ -40,7 +39,7 @@ Refer to the `environment.yml` file for the required dependencies.
 
 ## Chat Bot
 
-The Fitness Project includes an AI Fitness Advisor chat bot powered by OpenAI's GPT-3.5. This bot provides insights, answers questions related to workouts, and analyzes gym data to offer personalized recommendations. The chat bot is integrated into the Streamlit web app, allowing users to interact with the AI advisor seamlessly. It allow users to query fitness data in natural language and respond with relevant SQL code and Plotly visualizations.
+The Fitness Project includes an AI Fitness Advisor chat bot powered by OpenAI's GPT-3.5. This bot provides insights, answers questions related to workouts, and analyzes gym data to offer personalized recommendations. The chat bot is integrated into the Streamlit web app, allowing users to interact with the AI advisor seamlessly. It allow users to query fitness data in natural language and respond with relevant SQL code (via DuckDB queries) and Plotly visualizations.
 
 ### System Requirements
 
@@ -49,10 +48,11 @@ The Fitness Project includes an AI Fitness Advisor chat bot powered by OpenAI's 
 
 ### Getting Started Yourself
 
-1. Obtain API Key from OpenAI: Sign up for access to the GPT-3.5 model and obtain your API key.
-2. Set Up Streamlit App: Make sure you have the Streamlit app running with the required [dependencies](#requirements).
-3. Add API Key: Insert your OpenAI API key in the appropriate configuration file or as an environment variable.
-4. Interact with the Chat Bot: Open the Fitness Project Streamlit app and start interacting with the AI Fitness Advisor. Ask questions related to your workout, progress, or seek personalized recommendations.
+1. Set Up Streamlit App: Make sure you have the Streamlit app running with the required [dependencies](#requirements).
+2. Set up suitable data source, SQL Database/Google Sheets. 
+3. Obtain API Key from OpenAI: Sign up for access to the GPT-3.5 model and obtain your API key.
+4. Add API Key: Insert your OpenAI API key in the appropriate configuration file or as an environment variable.
+5. Interact with the Chat Bot: Open the Fitness Project Streamlit app and start interacting with the AI Fitness Advisor. Ask questions related to your workout, progress, or seek personalized recommendations.
 
 ```python
 # Sample code snippet for interacting with the chat bot
@@ -68,9 +68,9 @@ client = OpenAI(api_key="YOUR_OPENAI_API_KEY")
 - Streamlit App Production using Streamlit Cloud
 - Streamlit Front-End development, key features include password functionality.
 - Authenticating API with OAuth2
-- Data Visualization with Plotly
+- Data Visualisation with Plotly
 - Unit testing
-- creating a table in duck_db:
+- creating a table in duck_db, this is used to allow the chatbot to query fitness data with SQL:
     When you register a DataFrame with DuckDB using the `register` method, you're creating a temporary view of the DataFrame in the database. This allows you to run SQL queries on the DataFrame as if it were a table in the database. However, this view is not persistent - it will not be stored in the database and will disappear when the connection is closed or the program ends.
 
     If you register the DataFrame but do not create a table, you can still run queries on the DataFrame for the duration of your current program or session, but the data will not be saved in the database for future sessions.
@@ -95,9 +95,10 @@ client = OpenAI(api_key="YOUR_OPENAI_API_KEY")
 
 ## Future Development
 
+- Explore removing Google Sheets entirely and supporting application from DuckDB
 - Indication of key areas of growth e.g. leg exercises vs upper body
 - Future prediction/planning to target growth of muscle groups and hit lifting goals, involving construction of a simple regression model
-- Integration with Strava API as an alternative to Fitbit, this will be more versatile to app users. Opportunity for advanced analytics, for example looking at heart rate zones.
+- Integration with Strava API as an alternative to Fitbit, providing a more versatile connection. Opportunity for advanced analytics, for example looking at heart rate zones.
 
 ## Acknowledgments
 
