@@ -1,1 +1,5 @@
+# streamlits secrets
 .streamlit/secrets.toml
+
+# database 
+.db
