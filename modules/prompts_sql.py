@@ -1,9 +1,8 @@
 import duckdb as duckdb
 import streamlit as st
 import pandas as pd
+import os
 from modules.util import reduce_dataframe_size, clean_lifts_data
-
-# Import relevant functions from get_google_sheets_data.py
 from modules.get_google_sheets_data import (
     google_sheet_auth,
     get_google_sheet,
@@ -28,7 +27,7 @@ lifts_df = get_google_sheet(
 cleaned_lifts_df = clean_lifts_data(lifts_df)
 
 # Your specific table details
-TABLE_NAME = repr("fit.historic_exercises")
+TABLE_NAME = "historic_exercises"
 TABLE_DESCRIPTION = """
 This table contains records of gym sessions. It includes the date, activity e.g. bench press, 
 and the weight lifted, and number of sets and reps achieved. It is intended to track gym performance
@@ -81,62 +80,61 @@ def get_table_context(
     df: pd.DataFrame = None,
 ):
 
-    table = table_name.split(".")
+    # Specify the directory and name for the DuckDB database
+    db_dir = "database"
+    db_name = "fit.db"
+    db_path = os.path.join(db_dir, db_name)
+    os.makedirs(db_dir, exist_ok=True)
 
-    # Create an in-memory temp DuckDB database
-    # con = duckdb.connect(":memory:")
-    con = duckdb.connect()
+    # Connect to the DuckDB database
+    con = duckdb.connect(db_path)
 
-    # Register the DataFrame as a temporary DuckDB table if provided
+    # Register the DataFrame
     if df is not None:
-        con.register(f"{table}", df)
-
-    # Retrieve column information from DuckDB
-    # columns = con.execute(
-    #     f"SELECT column_name, type_name FROM duckdb_catalog.columns WHERE table_name = '{table}'"
-    # ).fetchdf()
-
-    temp_name = '["fit", "historic_exercises"]'
-    columns = con.execute(
-        f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '{temp_name}'"
-    ).fetchdf()
-
-    print(con.execute(f"SELECT table_name FROM information_schema.columns").fetchdf())
-
-    # columns = con.execute(
-    #     f"SELECT table_name FROM information_schema.columns WHERE table_name = "
-    # ).fetchdf()
-
-    print(columns)
-
-    columns = "\n".join(
-        [
-            f"- **{columns['column_name'][i]}**: {columns['data_type'][i]}"
-            for i in range(len(columns["column_name"]))
-        ]
-    )
-
-    context = f"""
-    Here is the table name <tableName> {'.'.join(table)} </tableName>
-
-    <tableDescription>{table_description}</tableDescription>
-
-    Here are the columns of the {'.'.join(table)}
-
-    <columns>\n\n{columns}\n\n</columns>
-    """
-    if metadata_query and df is not None:
-        # Retrieve metadata information from DuckDB if DataFrame is provided
-        metadata = con.execute(metadata_query).fetchdf()
-        metadata = "\n".join(
-            [
-                f"- {metadata['VARIABLE_NAME'][i]}: {metadata['DEFINITION'][i]}"
-                for i in range(len(metadata["VARIABLE_NAME"]))
-            ]
+        con.register(table_name, df)
+        con.execute(
+            f"CREATE OR REPLACE TABLE {table_name} AS SELECT * FROM {table_name}"
         )
-        context = context + f"\n\nAvailable variables by VARIABLE_NAME:\n\n{metadata}"
 
-    return context
+        # Check if df is not empty
+        if df.empty:
+            st.error("Error: The DataFrame df is empty.")
+        else:
+            # Now, try fetching the table context again
+            columns = con.execute(
+                f"SELECT column_name, data_type FROM information_schema.columns"
+            ).fetchdf()
+
+            columns = "\n".join(
+                [
+                    f"- **{columns['column_name'][i]}**: {columns['data_type'][i]}"
+                    for i in range(len(columns["column_name"]))
+                ]
+            )
+
+            context = f"""
+            Here is the table name <tableName> {(table_name)} </tableName>
+
+            <tableDescription>{table_description}</tableDescription>
+
+            Here are the columns of the {(table_name)}
+
+            <columns>\n\n{columns}\n\n</columns>
+            """
+            if metadata_query and df is not None:
+                # Retrieve metadata information from DuckDB if DataFrame is provided
+                metadata = con.execute(metadata_query).fetchdf()
+                metadata = "\n".join(
+                    [
+                        f"- {metadata['VARIABLE_NAME'][i]}: {metadata['DEFINITION'][i]}"
+                        for i in range(len(metadata["VARIABLE_NAME"]))
+                    ]
+                )
+                context = (
+                    context + f"\n\nAvailable variables by VARIABLE_NAME:\n\n{metadata}"
+                )
+
+            return context
 
 
 def get_system_prompt():
