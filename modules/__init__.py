@@ -17,3 +17,4 @@ from .util import (
     performance_tracking,
     user_pb_comparison,
 )
+from .setup_duckdb import DuckDBManager

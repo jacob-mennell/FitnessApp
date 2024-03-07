@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from modules.get_google_sheets_data import get_google_sheet, export_to_google_sheets
+from modules.setup_duckdb import DuckDBManager
 import hashlib
 from typing import Optional, Union
 import os
@@ -92,16 +93,30 @@ def check_password():
     return st.session_state["password_correct"]
 
 
-def load_data(sheet_url, google_sheet_cred_dict):
-    # Load data from Google Sheets
-    lifts_df = get_google_sheet(
-        sheet_url=sheet_url, credentials=google_sheet_cred_dict, sheet_name="Lifts"
+# def load_data(sheet_url, google_sheet_cred_dict):
+#     # Load data from Google Sheets
+#     lifts_df = get_google_sheet(
+#         sheet_url=sheet_url, credentials=google_sheet_cred_dict, sheet_name="Lifts"
+#     )
+#     exercises_df = get_google_sheet(
+#         sheet_url=sheet_url, credentials=google_sheet_cred_dict, sheet_name="Exercises"
+#     )
+#     exercise_list_master = exercises_df["Exercise"].drop_duplicates().to_list()
+#     return lifts_df, exercises_df, exercise_list_master
+
+
+def load_data():
+    # Load data from duck db
+    lifts_df = DuckDBManager().get_data(table_name="historic_exercises")
+
+    exercises_df = DuckDBManager().get_data(
+        table_name="historic_exercises",
+        query="SELECT DISTINCT Exercise AS Exercise FROM historic_exercises;",
     )
-    exercises_df = get_google_sheet(
-        sheet_url=sheet_url, credentials=google_sheet_cred_dict, sheet_name="Exercises"
-    )
+
     exercise_list_master = exercises_df["Exercise"].drop_duplicates().to_list()
-    return lifts_df, exercises_df, exercise_list_master
+
+    return lifts_df, exercise_list_master
 
 
 def clean_lifts_data(lifts_df):
@@ -197,7 +212,7 @@ def create_form(exercise_list):
         st.form_submit_button(on_click=add_dfForm)
 
 
-def record_sets(lifts_df, exercises_df, sheet_url, google_sheet_cred_dict):
+def record_sets(lifts_df, exercises_df):
     lifts_df = clean_lifts_data(lifts_df)
     session_choice = select_session(exercises_df)
     make_choice = select_exercise(exercises_df, session_choice)
@@ -223,19 +238,22 @@ def record_sets(lifts_df, exercises_df, sheet_url, google_sheet_cred_dict):
     data = st.session_state.data
     create_form(make_choice)
 
-    export_to_google_sheets(
-        sheet_url=sheet_url,
-        df_new=data,
-        credentials=google_sheet_cred_dict,
-        sheet_name="Lifts",
-    )
+    # export_to_google_sheets(
+    #     sheet_url=sheet_url,
+    #     df_new=data,
+    #     credentials=google_sheet_cred_dict,
+    #     sheet_name="Lifts",
+    # )
+
+    # Add data to DuckDB
+    DuckDBManager().append_to_table(df=data, table_name="historic_exercises")
 
 
-def performance_tracking(lifts_df, exercises_df):
+def performance_tracking(lifts_df, exercise_list_master):
     # Filter data for performance tracking
     selected_exercise = st.selectbox(
         "Select an exercise for performance tracking:",
-        exercises_df["Exercise"].unique(),
+        exercise_list_master,
     )
     selected_lifts = lifts_df[lifts_df["Exercise"] == selected_exercise]
 

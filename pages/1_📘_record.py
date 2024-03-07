@@ -44,19 +44,17 @@ def main():
     )
 
     # Load data
-    lifts_df, exercises_df, exercise_list_master = load_data(
-        sheet_url, google_sheet_cred_dict
-    )
+    lifts_df, exercise_list_master = load_data()
 
     # Record sets
     st.subheader("Record Sets")
 
     if check_password():
-        record_sets(lifts_df, exercises_df, sheet_url, google_sheet_cred_dict)
+        record_sets(lifts_df, exercise_list_master, sheet_url, google_sheet_cred_dict)
 
     # Display fetched data and exercise list
     st.subheader("Performance Tracking")
-    performance_tracking(lifts_df, exercises_df)
+    performance_tracking(lifts_df, exercise_list_master)
 
     # User PB Comparison
     st.subheader("User PB Comparison")
