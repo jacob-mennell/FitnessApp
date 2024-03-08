@@ -3,11 +3,7 @@ import streamlit as st
 import pandas as pd
 import os
 from modules.util import reduce_dataframe_size, clean_lifts_data
-from modules.get_google_sheets_data import (
-    google_sheet_auth,
-    get_google_sheet,
-    export_to_google_sheets,
-)
+from modules.duckdb import DuckDBManager
 
 # Your specific table details
 TABLE_NAME = "historic_exercises"
@@ -59,32 +55,20 @@ Then provide 3 example questions using bullet points.
 def get_table_context(
     table_name: str,
     table_description: str,
-    db_dir: str,
-    db_name: str,
     metadata_query: str = None,
 ):
 
-    db_path = os.path.join(db_dir, db_name)
-    os.makedirs(db_dir, exist_ok=True)
-
-    # Connect to the DuckDB database
-    con = duckdb.connect(db_path)
-
     # Try to fetch the table
-    try:
-        df = con.execute(f"SELECT * FROM {table_name}").fetchdf()
-    except Exception as e:
-        st.error(f"Error: The table {table_name} does not exist in the database.")
-        return
+    df = DuckDBManager().get_data(table_name="historic_exercises")
 
     # Check if df is not empty
     if df.empty:
         st.error("Error: The DataFrame df is empty.")
     else:
         # Now, try fetching the table context again
-        columns = con.execute(
-            f"SELECT column_name, data_type FROM information_schema.columns"
-        ).fetchdf()
+        columns = DuckDBManager().get_data(
+            query="SELECT column_name, data_type FROM information_schema.columns"
+        )
 
         columns = "\n".join(
             [
@@ -105,7 +89,7 @@ def get_table_context(
         if metadata_query:
             # Retrieve metadata information from DuckDB if metadata_query is provided
             try:
-                metadata = con.execute(metadata_query).fetchdf()
+                metadata = DuckDBManager().get_data(query=metadata_query)
                 metadata = "\n".join(
                     [
                         f"- {metadata['VARIABLE_NAME'][i]}: {metadata['DEFINITION'][i]}"
@@ -123,9 +107,6 @@ def get_table_context(
 
 def get_system_prompt():
     table_context = get_table_context(
-        table_name=TABLE_NAME,
-        table_description=TABLE_DESCRIPTION,
-        db_dir="database",
-        db_name="fit.db",
+        table_name=TABLE_NAME, table_description=TABLE_DESCRIPTION
     )
     return GEN_SQL.format(context=table_context)

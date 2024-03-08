@@ -37,7 +37,7 @@ class DuckDBManager:
         except Exception as e:
             print(f"Error setting up DuckDB table: {e}")
 
-    def get_data(self, table_name: str, query=None):
+    def get_data(self, table_name: str = None, query=None):
         try:
             with duckdb.connect(self.db_path) as con:
                 if query is None:

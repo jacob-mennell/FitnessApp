@@ -3,12 +3,7 @@ import streamlit as st
 import pandas as pd
 import os
 from modules.util import reduce_dataframe_size, clean_lifts_data
-from modules.get_google_sheets_data import (
-    google_sheet_auth,
-    get_google_sheet,
-    export_to_google_sheets,
-)
-
+from modules.duckdb import DuckDBManager
 
 # Your specific table details
 TABLE_NAME = "historic_exercises"
@@ -44,25 +39,10 @@ Now to get started, please briefly introduce yourself, describe the DataFrame at
 
 
 @st.cache(show_spinner="Loading AIFit's context...")
-def get_table_context(
-    table_name: str,
-    table_description: str,
-    db_dir: str,
-    db_name: str,
-):
-
-    db_path = os.path.join(db_dir, db_name)
-    os.makedirs(db_dir, exist_ok=True)
-
-    # Connect to the DuckDB database
-    con = duckdb.connect(db_path)
+def get_table_context(table_name: str, table_description: str):
 
     # Try to fetch the table
-    try:
-        df = con.execute(f"SELECT * FROM {table_name}").fetchdf()
-    except Exception as e:
-        st.error(f"Error: The table {table_name} does not exist in the database.")
-        return
+    df = DuckDBManager().get_data(table_name="historic_exercises")
 
     # Check if df is not empty
     if df.empty:
@@ -97,7 +77,5 @@ def get_plotly_prompt():
     table_context = get_table_context(
         table_name=TABLE_NAME,
         table_description=TABLE_DESCRIPTION,
-        db_dir="database",
-        db_name="fit.db",
     )
     return GEN_PLOTLY.format(context=table_context)

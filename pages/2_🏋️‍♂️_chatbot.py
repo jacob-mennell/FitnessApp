@@ -7,13 +7,9 @@ from modules.util import (
     check_password,
     execute_sql_query,
 )
-import duckdb as duckdb
+from modules.duckdb import DuckDBManager
 import re
 import os
-
-DB_DIR = "database"
-DB_NAME = "fit.db"
-
 
 st.title("AI Fitness Advisor 🏋️‍♂️")
 
@@ -80,9 +76,7 @@ if check_password():
             st.write(sql)
 
             # Execute the SQL query using DuckDB connection and store the results
-            message["results"] = execute_sql_query(
-                sql=sql, db_name=DB_NAME, db_dir=DB_DIR
-            )
+            message["results"] = DuckDBManager().get_data(query=sql)
 
             # Display the results
             if message["results"] is not None:
