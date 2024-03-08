@@ -47,6 +47,14 @@ class DuckDBManager:
         except Exception as e:
             print(f"Error fetching data from DuckDB: {e}")
 
+    def execute_query(self, query: str):
+        try:
+            with duckdb.connect(self.db_path) as con:
+                con.execute(query)
+                print(f"Query has been successfully executed in DuckDB.")
+        except Exception as e:
+            print(f"Error executing DuckDB query: {e}")
+
     def append_to_table(self, df: pd.DataFrame, table_name: str):
         try:
             with duckdb.connect(self.db_path) as con:
@@ -63,11 +71,12 @@ class DuckDBManager:
 
 
 if __name__ == "__main__":
+
     # Create an instance of DuckDBManager
     db_manager = DuckDBManager()
 
-    db_manager.setup_table(table_name="historic_exercises", df=df)
+    # db_manager.setup_table(table_name="exercises", df=exercises_df)
 
     # Fetch data from the table
-    data = db_manager.get_data(table_name="historic_exercises")
+    data = db_manager.get_data(table_name="exercises")
     print(data)

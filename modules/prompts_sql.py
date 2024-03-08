@@ -9,23 +9,6 @@ from modules.get_google_sheets_data import (
     export_to_google_sheets,
 )
 
-# # Get Google Sheet URL and credentials using st.secrets
-# sheet_url = st.secrets["SHEET_URL"]
-# google_sheet_cred_dict = st.secrets["GOOGLE_SHEET_CRED"]
-
-# # Fetch exercises data from Google Sheets
-# exercises_df = get_google_sheet(
-#     sheet_url=sheet_url, credentials=google_sheet_cred_dict, sheet_name="Exercises"
-# )
-
-# # Fetch lifts data from Google Sheets
-# lifts_df = get_google_sheet(
-#     sheet_url=sheet_url, credentials=google_sheet_cred_dict, sheet_name="Lifts"
-# )
-
-# # Apply cleaning functions to lifts_df
-# cleaned_lifts_df = clean_lifts_data(lifts_df)
-
 # Your specific table details
 TABLE_NAME = "historic_exercises"
 TABLE_DESCRIPTION = """

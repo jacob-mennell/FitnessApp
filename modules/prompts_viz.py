@@ -9,22 +9,6 @@ from modules.get_google_sheets_data import (
     export_to_google_sheets,
 )
 
-# Get Google Sheet URL and credentials using st.secrets
-sheet_url = st.secrets["SHEET_URL"]
-google_sheet_cred_dict = st.secrets["GOOGLE_SHEET_CRED"]
-
-# Fetch exercises data from Google Sheets
-exercises_df = get_google_sheet(
-    sheet_url=sheet_url, credentials=google_sheet_cred_dict, sheet_name="Exercises"
-)
-
-# Fetch lifts data from Google Sheets
-lifts_df = get_google_sheet(
-    sheet_url=sheet_url, credentials=google_sheet_cred_dict, sheet_name="Lifts"
-)
-
-# Apply cleaning functions to lifts_df
-cleaned_lifts_df = clean_lifts_data(lifts_df)
 
 # Your specific table details
 TABLE_NAME = "historic_exercises"
@@ -59,48 +43,61 @@ For each question from the user, make sure to include a visualization in your re
 Now to get started, please briefly introduce yourself, describe the DataFrame at a high level, and share the available metrics in 2-3 sentences. Then provide 3 example questions using bullet points. """
 
 
+@st.cache(show_spinner="Loading AIFit's context...")
 def get_table_context(
     table_name: str,
     table_description: str,
-    df: pd.DataFrame = None,
+    db_dir: str,
+    db_name: str,
 ):
 
-    if df is not None:
-        # Check if df is not empty
-        if df.empty:
-            st.error("Error: The DataFrame df is empty.")
-        else:
-            # Now, try fetching the table context again
-            columns = "\n".join(
-                [f"- **{column}**: {df[column].dtype}" for column in df.columns]
-            )
+    db_path = os.path.join(db_dir, db_name)
+    os.makedirs(db_dir, exist_ok=True)
 
-            unique_exercises = df["Exercise"].unique()
+    # Connect to the DuckDB database
+    con = duckdb.connect(db_path)
 
-            exercises = "\n".join(
-                [f"- **{exercise}**" for exercise in unique_exercises]
-            )
+    # Try to fetch the table
+    try:
+        df = con.execute(f"SELECT * FROM {table_name}").fetchdf()
+    except Exception as e:
+        st.error(f"Error: The table {table_name} does not exist in the database.")
+        return
 
-            context = f"""
-            Here is the DataFrame name <DataFrame> {(table_name)} </DataFrame>
+    # Check if df is not empty
+    if df.empty:
+        st.error("Error: The DataFrame df is empty.")
+    else:
+        # Now, try fetching the table context again
+        columns = "\n".join(
+            [f"- **{column}**: {df[column].dtype}" for column in df.columns]
+        )
 
-            <tableDescription>{table_description}</tableDescription>
+        unique_exercises = df["Exercise"].unique()
 
-            Here are the columns of the {(table_name)}
+        exercises = "\n".join([f"- **{exercise}**" for exercise in unique_exercises])
 
-            <columns>\n\n{columns}\n\n</columns>
+        context = f"""
+        Here is the DataFrame name <DataFrame> {(table_name)} </DataFrame>
 
-            Here are the unique exercises:
+        <tableDescription>{table_description}</tableDescription>
 
-            <exercises>\n\n{exercises}\n\n</exercises>
-            """
-            return context
+        Here are the columns of the {(table_name)}
+
+        <columns>\n\n{columns}\n\n</columns>
+
+        Here are the unique exercises:
+
+        <exercises>\n\n{exercises}\n\n</exercises>
+        """
+        return context
 
 
 def get_plotly_prompt():
     table_context = get_table_context(
         table_name=TABLE_NAME,
         table_description=TABLE_DESCRIPTION,
-        df=cleaned_lifts_df,
+        db_dir="database",
+        db_name="fit.db",
     )
     return GEN_PLOTLY.format(context=table_context)

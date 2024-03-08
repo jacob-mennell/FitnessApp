@@ -16,16 +16,13 @@ from modules.util import (
     performance_tracking,
     user_pb_comparison,
 )
-
+from modules.duckdb import DuckDBManager
 
 # format
 st.set_page_config(layout="wide")
 
 
 def main():
-    # using st.secrets
-    sheet_url = st.secrets["SHEET_URL"]
-    google_sheet_cred_dict = st.secrets["GOOGLE_SHEET_CRED"]
 
     # set streamlit app headers
     st.header("Gym Performance Tracker")
@@ -44,13 +41,13 @@ def main():
     )
 
     # Load data
-    lifts_df, exercise_list_master = load_data()
+    lifts_df, exercises_df, exercise_list_master = load_data()
 
     # Record sets
     st.subheader("Record Sets")
 
     if check_password():
-        record_sets(lifts_df, exercise_list_master, sheet_url, google_sheet_cred_dict)
+        record_sets(lifts_df, exercises_df)
 
     # Display fetched data and exercise list
     st.subheader("Performance Tracking")
