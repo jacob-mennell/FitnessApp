@@ -104,14 +104,15 @@ def load_sheets_data(sheet_url, google_sheet_cred_dict):
 
     return lifts_df, exercises_df, exercise_list_master
 
+def load_data(duckdb_manager=None):
+    if duckdb_manager is None:
+        duckdb_manager = DuckDBManager()
 
-def load_data():
-    # Load data from duck db
-    lifts_df = DuckDBManager().get_data(table_name="historic_exercises")
-
-    exercises_df = DuckDBManager().get_data(table_name="exercises")
-
-    exercise_list_master = exercises_df["Exercise"].unique()
+    # Load data using the DuckDB manager
+    lifts_df = duckdb_manager.get_data(table_name="historic_exercises")
+    exercises_df = duckdb_manager.get_data(table_name="exercises")
+    
+    exercise_list_master = exercises_df["Exercise"].unique() if not exercises_df.empty else []
 
     return lifts_df, exercises_df, exercise_list_master
 
