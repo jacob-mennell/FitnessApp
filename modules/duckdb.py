@@ -21,41 +21,37 @@ class DuckDBManager:
     def setup_table(self, table_name: str, df: pd.DataFrame, schema: Optional[Dict[str, str]] = None) -> None:
         """
         Setup a table in DuckDB.
-
+    
         Args:
             table_name (str): Name of the table.
             df (pd.DataFrame): DataFrame to register as a table.
             schema (Optional[Dict[str, str]]): Dictionary specifying the column names and their types.
-
+    
         Returns:
             None
         """
-        if not isinstance(table_name, str) or not table_name:
-            raise ValueError("table_name must be a non-empty string")
-
         if not isinstance(df, pd.DataFrame) or df.empty:
             raise ValueError("df must be a non-empty DataFrame")
-
+    
         if schema is not None:
             if not isinstance(schema, dict) or not schema:
                 raise ValueError("schema must be a non-empty dictionary")
-
+    
         try:
             with duckdb.connect(self.db_path) as con:
-                if df is not None:
-                    con.register(table_name, df)
-
-                    if schema is not None:
-                        columns_with_types = ", ".join(
-                            f"{col} {dtype}" for col, dtype in schema.items()
-                        )
-                        con.execute(
-                            f"CREATE OR REPLACE TABLE {table_name} ({columns_with_types}) AS SELECT * FROM {table_name}"
-                        )
-                    else:
-                        con.execute(
-                            f"CREATE OR REPLACE TABLE {table_name} AS SELECT * FROM {table_name}"
-                        )
+                con.register(table_name, df)
+    
+                if schema is not None:
+                    columns_with_types = ", ".join(
+                        f"{col} {dtype}" for col, dtype in schema.items()
+                    )
+                    con.execute(
+                        f"CREATE OR REPLACE TABLE {table_name} ({columns_with_types}) AS SELECT * FROM {table_name}"
+                    )
+                else:
+                    con.execute(
+                        f"CREATE OR REPLACE TABLE {table_name} AS SELECT * FROM {table_name}"
+                    )
         except Exception as e:
             print(f"Error setting up DuckDB table: {e}")
 
