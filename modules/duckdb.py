@@ -30,12 +30,8 @@ class DuckDBManager:
         Returns:
             None
         """
-        if not isinstance(df, pd.DataFrame) or df.empty:
+        if df.empty:
             raise ValueError("df must be a non-empty DataFrame")
-    
-        if schema is not None:
-            if not isinstance(schema, dict) or not schema:
-                raise ValueError("schema must be a non-empty dictionary")
     
         try:
             with duckdb.connect(self.db_path) as con:
