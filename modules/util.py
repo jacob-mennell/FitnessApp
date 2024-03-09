@@ -117,6 +117,25 @@ def load_data(duckdb_manager=None):
     return lifts_df, exercises_df, exercise_list_master
 
 
+def record_sets(lifts_df, exercises_df, duckdb_manager=None, sheets=False, duckdb=True, sheet_url=None, google_sheet_cred_dict=None):
+    if duckdb:
+        load_data_to_duckdb(lifts_df, exercises_df, duckdb_manager)
+    
+    if sheets:
+        export_to_google_sheets(sheet_url, lifts_df, google_sheet_cred_dict)
+
+
+def load_data_to_duckdb(lifts_df, exercises_df, duckdb_manager):
+    if duckdb_manager is None:
+        duckdb_manager = DuckDBManager()
+
+    duckdb_manager.setup_table("historic_exercises", lifts_df)
+    duckdb_manager.setup_table("exercises", exercises_df)
+
+
+def export_to_google_sheets(sheet_url, lifts_df, google_sheet_cred_dict):
+    # Logic to export data to Google Sheets
+
 def clean_lifts_data(lifts_df):
     # Data cleaning operations
     lifts_df["Weight"] = lifts_df["Weight"].astype(float)
