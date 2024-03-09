@@ -226,10 +226,13 @@ def create_form(exercise_list):
 
         st.form_submit_button(on_click=add_dfForm)
 
-
 def record_sets(
-    lifts_df, exercises_df, sheets=False, sheet_url=None, google_sheet_cred_dict=None
+    lifts_df, exercises_df, duckdb_manager=None, sheets=False, sheet_url=None, google_sheet_cred_dict=None
 ):
+    # Initialize DuckDBManager if not provided
+    if duckdb_manager is None:
+        duckdb_manager = DuckDBManager()
+
     lifts_df = clean_lifts_data(lifts_df)
     session_choice = select_session(exercises_df)
     make_choice = select_exercise(exercises_df, session_choice)
@@ -269,8 +272,7 @@ def record_sets(
         )
 
     # Add data to DuckDB
-    DuckDBManager().append_to_table(df=data, table_name="historic_exercises")
-
+    duckdb_manager.append_to_table(df=data, table_name="historic_exercises")
 
 def performance_tracking(lifts_df, exercise_list_master):
     # Filter data for performance tracking
