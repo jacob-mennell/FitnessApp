@@ -1,7 +1,6 @@
 import duckdb as duckdb
 import pandas as pd
 import os
-from typing import Optional, Dict
 
 
 class DuckDBManager:
@@ -18,26 +17,38 @@ class DuckDBManager:
         self.db_path = os.path.join(db_dir, db_name)
         os.makedirs(db_dir, exist_ok=True)
 
-    def setup_table(self, table_name: str, df: pd.DataFrame, schema: Optional[Dict[str, str]] = None) -> None:
+    def _connect_to_database(self):
+        """
+        Helper method to connect to the DuckDB database.
+        """
+        return duckdb.connect(self.db_path)
+
+    def _handle_error(self, message: str, error: Exception):
+        """
+        Helper method to handle errors.
+        """
+        print(f"Error: {message} - {error}")
+
+    def setup_table(self, table_name: str, df: pd.DataFrame, schema: dict = None) -> None:
         """
         Setup a table in DuckDB.
-    
+
         Args:
             table_name (str): Name of the table.
             df (pd.DataFrame): DataFrame to register as a table.
             schema (Optional[Dict[str, str]]): Dictionary specifying the column names and their types.
-    
+
         Returns:
             None
         """
         if df.empty:
             raise ValueError("df must be a non-empty DataFrame")
-    
+
         try:
-            with duckdb.connect(self.db_path) as con:
+            with self._connect_to_database() as con:
                 con.register(table_name, df)
-    
-                if schema is not None:
+
+                if schema:
                     columns_with_types = ", ".join(
                         f"{col} {dtype}" for col, dtype in schema.items()
                     )
@@ -49,7 +60,7 @@ class DuckDBManager:
                         f"CREATE OR REPLACE TABLE {table_name} AS SELECT * FROM {table_name}"
                     )
         except Exception as e:
-            print(f"Error setting up DuckDB table: {e}")
+            self._handle_error(f"Error setting up DuckDB table: {e}")
 
     def get_data(self, table_name: str = None, query: str = None) -> pd.DataFrame:
         """
@@ -63,13 +74,13 @@ class DuckDBManager:
             pd.DataFrame: DataFrame containing the retrieved data.
         """
         try:
-            with duckdb.connect(self.db_path) as con:
+            with self._connect_to_database() as con:
                 if query is None:
                     query = f"SELECT * FROM {table_name}"
                 df = con.execute(query).fetchdf()
                 return df
         except Exception as e:
-            print(f"Error fetching data from DuckDB: {e}")
+            self._handle_error(f"Error fetching data from DuckDB: {e}")
 
     def execute_query(self, query: str) -> None:
         """
@@ -82,10 +93,10 @@ class DuckDBManager:
             None
         """
         try:
-            with duckdb.connect(self.db_path) as con:
+            with self._connect_to_database() as con:
                 con.execute(query)
         except Exception as e:
-            print(f"Error executing DuckDB query: {e}")
+            self._handle_error(f"Error executing DuckDB query: {e}")
 
     def append_to_table(self, df: pd.DataFrame, table_name: str) -> None:
         """
@@ -99,15 +110,15 @@ class DuckDBManager:
             None
         """
         try:
-            with duckdb.connect(self.db_path) as con:
-                if df is not None and not df.empty:
-                    con.register("temp_table", df)
-                    con.execute(f"INSERT INTO {table_name} SELECT * FROM temp_table")
-                else:
-                    print("Error: The DataFrame df is empty or None.")
-        except Exception as e:
-            print(f"Error appending to DuckDB table: {e}")
+            with self._connect_to_database() as con:
+                if df.empty:
+                    print("Error: The DataFrame df is empty.")
+                    return
 
+                con.register("temp_table", df)
+                con.execute(f"INSERT INTO {table_name} SELECT * FROM temp_table")
+        except Exception as e:
+            self._handle_error(f"Error appending to DuckDB table: {e}")
 
 if __name__ == "__main__":
 
