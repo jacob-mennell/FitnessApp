@@ -163,10 +163,13 @@ def select_user(lifts_df):
     return user_choice
 
 
-def add_misc_exercise(sheet_url, google_sheet_cred_dict, sheets=False):
+def add_misc_exercise(
+    sheet_url=None, google_sheet_cred_dict=None, duckdb=True, sheets=False, duckdb_manager=None
+):
     session_choice = "MISC"
     new_exercise_misc = st.text_input("Add exercise into MISC day:", "INSERT HERE")
     data = pd.DataFrame({"Day": [session_choice], "Exercise": [new_exercise_misc]})
+    
     if new_exercise_misc != "INSERT HERE":
         if sheets:
             export_to_google_sheets(
@@ -175,11 +178,15 @@ def add_misc_exercise(sheet_url, google_sheet_cred_dict, sheets=False):
                 credentials=google_sheet_cred_dict,
                 sheet_name="Exercises",
             )
-        else:
-            DuckDBManager.append_to_table(df=data, table_name="exercises")
+        elif duckdb:
+            if duckdb_manager is None:
+                duckdb_manager = DuckDBManager()
+                
+            # Add data to DuckDB
+            duckdb_manager.append_to_table(df=data, table_name="exercises")
 
     st.write("New exercise to be added:", new_exercise_misc)
-
+    
 
 def create_form(exercise_list):
     print(exercise_list)
@@ -227,12 +234,8 @@ def create_form(exercise_list):
         st.form_submit_button(on_click=add_dfForm)
 
 def record_sets(
-    lifts_df, exercises_df, duckdb_manager=None, sheets=False, sheet_url=None, google_sheet_cred_dict=None
+    lifts_df, exercises_df, duckdb_manager=None, sheets=False, duckdb=True, sheet_url=None, google_sheet_cred_dict=None
 ):
-    # Initialize DuckDBManager if not provided
-    if duckdb_manager is None:
-        duckdb_manager = DuckDBManager()
-
     lifts_df = clean_lifts_data(lifts_df)
     session_choice = select_session(exercises_df)
     make_choice = select_exercise(exercises_df, session_choice)
@@ -270,9 +273,13 @@ def record_sets(
             credentials=google_sheet_cred_dict,
             sheet_name="Lifts",
         )
+    
+    elif duckdb:
+        if duckdb_manager is None:
+            duckdb_manager = DuckDBManager()
 
-    # Add data to DuckDB
-    duckdb_manager.append_to_table(df=data, table_name="historic_exercises")
+        # Add data to DuckDB
+        duckdb_manager.append_to_table(df=data, table_name="historic_exercises")
 
 def performance_tracking(lifts_df, exercise_list_master):
     # Filter data for performance tracking
