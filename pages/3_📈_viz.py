@@ -2,18 +2,10 @@ from openai import OpenAI
 import streamlit as st
 from modules.prompts_viz import get_plotly_prompt
 from modules.duckdb import DuckDBManager
-from modules.util import (
-    reduce_dataframe_size,
-    clean_lifts_data,
-    check_password,
-    execute_sql_query,
-)
+from modules.util import reduce_dataframe_size, clean_lifts_data, check_password
 import duckdb as duckdb
 import re
 import os
-
-DB_DIR = "database"
-DB_NAME = "fit.db"
 
 st.title("AI Fitness Data Visualization Expert 📈")
 

@@ -4,7 +4,7 @@ from modules.get_google_sheets_data import get_google_sheet, export_to_google_sh
 from modules.util import (
     clean_lifts_data,
     reduce_dataframe_size,
-    add_dfForm,
+    add_df_to_session_state,
     check_password,
     load_data,
     select_session,

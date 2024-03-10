@@ -29,7 +29,9 @@ class DuckDBManager:
         """
         print(f"Error: {message} - {error}")
 
-    def setup_table(self, table_name: str, df: pd.DataFrame, schema: dict = None) -> None:
+    def setup_table(
+        self, table_name: str, df: pd.DataFrame, schema: dict = None
+    ) -> None:
         """
         Setup a table in DuckDB.
 
@@ -119,6 +121,7 @@ class DuckDBManager:
                 con.execute(f"INSERT INTO {table_name} SELECT * FROM temp_table")
         except Exception as e:
             self._handle_error(f"Error appending to DuckDB table: {e}")
+
 
 if __name__ == "__main__":
 

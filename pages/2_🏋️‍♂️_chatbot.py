@@ -1,12 +1,7 @@
 from openai import OpenAI
 import streamlit as st
 from modules.prompts_sql import get_system_prompt
-from modules.util import (
-    reduce_dataframe_size,
-    clean_lifts_data,
-    check_password,
-    execute_sql_query,
-)
+from modules.util import reduce_dataframe_size, clean_lifts_data, check_password
 from modules.duckdb import DuckDBManager
 import re
 import os
