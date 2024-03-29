@@ -1,5 +1,2 @@
 # streamlits secrets
 .streamlit/secrets.toml
-
-# database 
-database/*
