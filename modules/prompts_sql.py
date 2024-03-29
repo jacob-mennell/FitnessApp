@@ -3,28 +3,7 @@ import streamlit as st
 import pandas as pd
 import os
 from modules.util import reduce_dataframe_size, clean_lifts_data
-from modules.get_google_sheets_data import (
-    google_sheet_auth,
-    get_google_sheet,
-    export_to_google_sheets,
-)
-
-# Get Google Sheet URL and credentials using st.secrets
-sheet_url = st.secrets["SHEET_URL"]
-google_sheet_cred_dict = st.secrets["GOOGLE_SHEET_CRED"]
-
-# Fetch exercises data from Google Sheets
-exercises_df = get_google_sheet(
-    sheet_url=sheet_url, credentials=google_sheet_cred_dict, sheet_name="Exercises"
-)
-
-# Fetch lifts data from Google Sheets
-lifts_df = get_google_sheet(
-    sheet_url=sheet_url, credentials=google_sheet_cred_dict, sheet_name="Lifts"
-)
-
-# Apply cleaning functions to lifts_df
-cleaned_lifts_df = clean_lifts_data(lifts_df)
+from modules.duckdb import DuckDBManager
 
 # Your specific table details
 TABLE_NAME = "historic_exercises"
@@ -77,53 +56,40 @@ def get_table_context(
     table_name: str,
     table_description: str,
     metadata_query: str = None,
-    df: pd.DataFrame = None,
 ):
 
-    # Specify the directory and name for the DuckDB database
-    db_dir = "database"
-    db_name = "fit.db"
-    db_path = os.path.join(db_dir, db_name)
-    os.makedirs(db_dir, exist_ok=True)
+    # Try to fetch the table
+    df = DuckDBManager().get_data(table_name="historic_exercises")
 
-    # Connect to the DuckDB database
-    con = duckdb.connect(db_path)
-
-    # Register the DataFrame
-    if df is not None:
-        con.register(table_name, df)
-        con.execute(
-            f"CREATE OR REPLACE TABLE {table_name} AS SELECT * FROM {table_name}"
+    # Check if df is not empty
+    if df.empty:
+        st.error("Error: The DataFrame df is empty.")
+    else:
+        # Now, try fetching the table context again
+        columns = DuckDBManager().get_data(
+            query="SELECT column_name, data_type FROM information_schema.columns"
         )
 
-        # Check if df is not empty
-        if df.empty:
-            st.error("Error: The DataFrame df is empty.")
-        else:
-            # Now, try fetching the table context again
-            columns = con.execute(
-                f"SELECT column_name, data_type FROM information_schema.columns"
-            ).fetchdf()
+        columns = "\n".join(
+            [
+                f"- **{columns['column_name'][i]}**: {columns['data_type'][i]}"
+                for i in range(len(columns["column_name"]))
+            ]
+        )
 
-            columns = "\n".join(
-                [
-                    f"- **{columns['column_name'][i]}**: {columns['data_type'][i]}"
-                    for i in range(len(columns["column_name"]))
-                ]
-            )
+        context = f"""
+        Here is the table name <tableName> {(table_name)} </tableName>
 
-            context = f"""
-            Here is the table name <tableName> {(table_name)} </tableName>
+        <tableDescription>{table_description}</tableDescription>
 
-            <tableDescription>{table_description}</tableDescription>
+        Here are the columns of the {(table_name)}
 
-            Here are the columns of the {(table_name)}
-
-            <columns>\n\n{columns}\n\n</columns>
-            """
-            if metadata_query and df is not None:
-                # Retrieve metadata information from DuckDB if DataFrame is provided
-                metadata = con.execute(metadata_query).fetchdf()
+        <columns>\n\n{columns}\n\n</columns>
+        """
+        if metadata_query:
+            # Retrieve metadata information from DuckDB if metadata_query is provided
+            try:
+                metadata = DuckDBManager().get_data(query=metadata_query)
                 metadata = "\n".join(
                     [
                         f"- {metadata['VARIABLE_NAME'][i]}: {metadata['DEFINITION'][i]}"
@@ -133,14 +99,14 @@ def get_table_context(
                 context = (
                     context + f"\n\nAvailable variables by VARIABLE_NAME:\n\n{metadata}"
                 )
+            except Exception as e:
+                st.error(f"Error executing metadata query: {e}")
 
-            return context
+        return context
 
 
 def get_system_prompt():
     table_context = get_table_context(
-        table_name=TABLE_NAME,
-        table_description=TABLE_DESCRIPTION,
-        df=cleaned_lifts_df,
+        table_name=TABLE_NAME, table_description=TABLE_DESCRIPTION
     )
     return GEN_SQL.format(context=table_context)

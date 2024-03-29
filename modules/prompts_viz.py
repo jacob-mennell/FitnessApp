@@ -3,28 +3,7 @@ import streamlit as st
 import pandas as pd
 import os
 from modules.util import reduce_dataframe_size, clean_lifts_data
-from modules.get_google_sheets_data import (
-    google_sheet_auth,
-    get_google_sheet,
-    export_to_google_sheets,
-)
-
-# Get Google Sheet URL and credentials using st.secrets
-sheet_url = st.secrets["SHEET_URL"]
-google_sheet_cred_dict = st.secrets["GOOGLE_SHEET_CRED"]
-
-# Fetch exercises data from Google Sheets
-exercises_df = get_google_sheet(
-    sheet_url=sheet_url, credentials=google_sheet_cred_dict, sheet_name="Exercises"
-)
-
-# Fetch lifts data from Google Sheets
-lifts_df = get_google_sheet(
-    sheet_url=sheet_url, credentials=google_sheet_cred_dict, sheet_name="Lifts"
-)
-
-# Apply cleaning functions to lifts_df
-historic_exercises_df = clean_lifts_data(lifts_df)
+from modules.duckdb import DuckDBManager
 
 # Your specific table details
 TABLE_NAME = "historic_exercises"
@@ -59,48 +38,44 @@ For each question from the user, make sure to include a visualization in your re
 Now to get started, please briefly introduce yourself, describe the DataFrame at a high level, and share the available metrics in 2-3 sentences. Then provide 3 example questions using bullet points. """
 
 
-def get_table_context(
-    table_name: str,
-    table_description: str,
-    df: pd.DataFrame = None,
-):
+@st.cache(show_spinner="Loading AIFit's context...")
+def get_table_context(table_name: str, table_description: str):
 
-    if df is not None:
-        # Check if df is not empty
-        if df.empty:
-            st.error("Error: The DataFrame df is empty.")
-        else:
-            # Now, try fetching the table context again
-            columns = "\n".join(
-                [f"- **{column}**: {df[column].dtype}" for column in df.columns]
-            )
+    # Try to fetch the table
+    df = DuckDBManager().get_data(table_name="historic_exercises")
 
-            unique_exercises = df["Exercise"].unique()
+    # Check if df is not empty
+    if df.empty:
+        st.error("Error: The DataFrame df is empty.")
+    else:
+        # Now, try fetching the table context again
+        columns = "\n".join(
+            [f"- **{column}**: {df[column].dtype}" for column in df.columns]
+        )
 
-            exercises = "\n".join(
-                [f"- **{exercise}**" for exercise in unique_exercises]
-            )
+        unique_exercises = df["Exercise"].unique()
 
-            context = f"""
-            Here is the DataFrame name <DataFrame> {(table_name)} </DataFrame>
+        exercises = "\n".join([f"- **{exercise}**" for exercise in unique_exercises])
 
-            <tableDescription>{table_description}</tableDescription>
+        context = f"""
+        Here is the DataFrame name <DataFrame> {(table_name)} </DataFrame>
 
-            Here are the columns of the {(table_name)}
+        <tableDescription>{table_description}</tableDescription>
 
-            <columns>\n\n{columns}\n\n</columns>
+        Here are the columns of the {(table_name)}
 
-            Here are the unique exercises:
+        <columns>\n\n{columns}\n\n</columns>
 
-            <exercises>\n\n{exercises}\n\n</exercises>
-            """
-            return context
+        Here are the unique exercises:
+
+        <exercises>\n\n{exercises}\n\n</exercises>
+        """
+        return context
 
 
 def get_plotly_prompt():
     table_context = get_table_context(
         table_name=TABLE_NAME,
         table_description=TABLE_DESCRIPTION,
-        df=historic_exercises_df,
     )
     return GEN_PLOTLY.format(context=table_context)

@@ -1,18 +1,11 @@
 from openai import OpenAI
 import streamlit as st
 from modules.prompts_viz import get_plotly_prompt
-from modules.util import (
-    reduce_dataframe_size,
-    clean_lifts_data,
-    check_password,
-    execute_sql_query,
-)
+from modules.duckdb import DuckDBManager
+from modules.util import reduce_dataframe_size, clean_lifts_data, check_password
 import duckdb as duckdb
 import re
 import os
-
-DB_DIR = "database"
-DB_NAME = "fit.db"
 
 st.title("AI Fitness Data Visualization Expert 📈")
 
@@ -69,11 +62,8 @@ if check_password():
         # Use regular expression to search for a SQL query pattern in the 'response' string
         python_match = re.search(r"```python\n(.*)\n```", response, re.DOTALL)
 
-        # Define your DuckDB query
-        sql = "SELECT * FROM historic_exercises"  # Replace with your actual query
-
         # Execute the SQL query using DuckDB connection and store the results
-        df = execute_sql_query(sql=sql, db_name=DB_NAME, db_dir=DB_DIR)
+        df = DuckDBManager().get_data(table_name="historic_exercises")
 
         # Prepare a dictionary to capture local variables after exec
         local_vars = {"df": df}
@@ -82,15 +72,15 @@ if check_password():
         # List of Plotly-specific keywords
         plotly_keywords = ["plotly", "px", "go", "fig"]
 
-        # Check if a Python code is found in the response
+        # Check for Python code
         if python_match:
-            # Extract the Python code
+            # Extract Python
             python_code = python_match.group(1)
 
             # Check if the Python code contains Plotly-specific keywords
             if any(keyword in python_code for keyword in plotly_keywords):
 
-                # Execute the Python code
+                # Execute Python
                 exec(python_code, global_vars, local_vars)
 
                 # Check if 'fig' variable (commonly used for Plotly figures) is in local variables
