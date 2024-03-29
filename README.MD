@@ -31,7 +31,7 @@ This project is a fitness tracker that allows users to record and visualize lift
 
 ## Application 
 **Link to Gym Performance Tracker Streamlit App:**
-[https://gym-tracker.streamlit.app/](https://gym-tracker.streamlit.app/)
+[https://jmfitness.streamlit.app/](https://jmfitness.streamlit.app)
 
 ## Requirements
 
