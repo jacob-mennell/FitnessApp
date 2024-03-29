@@ -14,5 +14,3 @@ dependencies:
   - pytest==8.0.1
   - streamlit==1.31.0
   - duckdb==0.9.3.dev4156
-  - pip:
-    - duckdb --upgrade --pre #work with python version
