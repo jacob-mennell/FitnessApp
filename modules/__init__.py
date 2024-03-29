@@ -5,7 +5,7 @@ from .prompts_viz import get_plotly_prompt
 from .util import (
     clean_lifts_data,
     reduce_dataframe_size,
-    add_dfForm,
+    add_df_to_session_state,
     check_password,
     load_data,
     select_session,
@@ -17,3 +17,4 @@ from .util import (
     performance_tracking,
     user_pb_comparison,
 )
+from .duckdb import DuckDBManager

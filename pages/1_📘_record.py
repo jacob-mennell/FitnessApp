@@ -4,7 +4,7 @@ from modules.get_google_sheets_data import get_google_sheet, export_to_google_sh
 from modules.util import (
     clean_lifts_data,
     reduce_dataframe_size,
-    add_dfForm,
+    add_df_to_session_state,
     check_password,
     load_data,
     select_session,
@@ -16,16 +16,13 @@ from modules.util import (
     performance_tracking,
     user_pb_comparison,
 )
-
+from modules.duckdb import DuckDBManager
 
 # format
 st.set_page_config(layout="wide")
 
 
 def main():
-    # using st.secrets
-    sheet_url = st.secrets["SHEET_URL"]
-    google_sheet_cred_dict = st.secrets["GOOGLE_SHEET_CRED"]
 
     # set streamlit app headers
     st.header("Gym Performance Tracker")
@@ -44,19 +41,17 @@ def main():
     )
 
     # Load data
-    lifts_df, exercises_df, exercise_list_master = load_data(
-        sheet_url, google_sheet_cred_dict
-    )
+    lifts_df, exercises_df, exercise_list_master = load_data()
 
     # Record sets
     st.subheader("Record Sets")
 
     if check_password():
-        record_sets(lifts_df, exercises_df, sheet_url, google_sheet_cred_dict)
+        record_sets(lifts_df, exercises_df)
 
     # Display fetched data and exercise list
     st.subheader("Performance Tracking")
-    performance_tracking(lifts_df, exercises_df)
+    performance_tracking(lifts_df, exercise_list_master)
 
     # User PB Comparison
     st.subheader("User PB Comparison")

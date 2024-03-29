@@ -18,7 +18,7 @@ This project is a fitness tracker that allows users to record and visualize lift
 
 ## Aims
 
-- Record and visualize lift data from workouts, including exercises, sets, reps, and weight, using Google Sheets as a flexible data store.
+- Record and visualize lift data from workouts, including exercises, sets, reps, and weight, using Google Sheets or DuckDB as a flexible data store.
 - Develop a Streamlit web app to serve as a user interface for data input and visualization. The app should allow all users to monitor existing users' performance, but require a password for creating new users and inputting data.
 - Use Plotly for creating interactive data visualizations that can help users understand their workout performance trends over time.
 - Integrate with OpenAI GPT-3.5 to enable users to query fitness data in natural language, providing additional insight and making the data more accessible.
@@ -91,6 +91,7 @@ client = OpenAI(api_key="YOUR_OPENAI_API_KEY")
 
     If you want to save the data in the database for future sessions, you should create a table from the DataFrame after registering it.
 
+- Project runs significantly faster on DuckDB vs Google Sheets as data remains within the application. Flexibility to scale with multiple user input.
 - Integration with OpenAI GPT-3.5 for natural language processing
 
 ## Future Development
