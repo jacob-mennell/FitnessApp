@@ -1,8 +1,6 @@
 name: fit
 channels:
   - defaults
-  - conda-forge
-  - pip
 dependencies:
   - python=3.10
   - pip:
