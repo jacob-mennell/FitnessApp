@@ -22,8 +22,9 @@ st.markdown(
     "Feel free to explore your fitness data and inquire about any aspect of your training. I am here to turn your data into insights."
 )
 st.markdown("Here are three example questions to get you started:")
-st.markdown("- Can you show me a bar chart of my BENCH PRESS progress over time?")
+st.markdown("- Can you show me a line chart of my BENCH PRESS progress over time?")
 st.markdown("- Can you visualize the exercises where I need to improve?")
+st.markdown("- Can you show me the three execrcises where I am strongest?")
 
 if check_password():
     # Initialize the chat messages history
