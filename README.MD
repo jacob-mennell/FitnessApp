@@ -35,7 +35,7 @@ This project is a fitness tracker that allows users to record and visualize lift
 
 ## Requirements
 
-Refer to the `environment.yml` file for the required dependencies.
+Refer to the `pyproject.toml` file for the required dependencies.
 
 ## Chat Bot
 
