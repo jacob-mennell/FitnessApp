@@ -1,4 +1,4 @@
-# Fitness Project
+lol# Fitness Project
 
 This project is a fitness tracker that allows users to record and visualize lift data from workouts, and includes an AI Fitness Advisor chat bot powered by OpenAI's GPT-3.5.
 
@@ -105,7 +105,3 @@ client = OpenAI(api_key="YOUR_OPENAI_API_KEY")
 
 - Thanks to OpenAI for their powerful GPT-3.5 model.
 - Thanks to Streamlit for their intuitive app framework.
-
-## Licence
-
-Feel free to customize it further based on your specific needs.
